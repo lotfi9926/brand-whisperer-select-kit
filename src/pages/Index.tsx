@@ -10,7 +10,7 @@ const Index = () => {
 
   const handleQuickAccess = async (role: 'coordinator' | 'technician') => {
     await login(`demo.${role}@collet.fr`, 'demo123', role);
-    navigate('/');
+    navigate('/quality-control');
   };
 
   return (
