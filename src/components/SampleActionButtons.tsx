@@ -1,16 +1,24 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface SampleActionButtonsProps {
   onSave: () => void;
   onAdd: () => void;
   showBackButton?: boolean;
+  showAddButton?: boolean;
+  onExportPdf?: () => void;
 }
 
-const SampleActionButtons = ({ onSave, onAdd, showBackButton = true }: SampleActionButtonsProps) => {
+const SampleActionButtons = ({ 
+  onSave, 
+  onAdd, 
+  showBackButton = true,
+  showAddButton = true,
+  onExportPdf
+}: SampleActionButtonsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -30,13 +38,25 @@ const SampleActionButtons = ({ onSave, onAdd, showBackButton = true }: SampleAct
         <Check className="w-4 h-4 mr-2" />
         Sauvegarder
       </Button>
-      <Button
-        variant="outline"
-        onClick={onAdd}
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        Ajouter un échantillon
-      </Button>
+      {showAddButton && (
+        <Button
+          variant="outline"
+          onClick={onAdd}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Ajouter un échantillon
+        </Button>
+      )}
+      {onExportPdf && (
+        <Button
+          variant="outline"
+          onClick={onExportPdf}
+          className="border-[#0091CA] text-[#0091CA] hover:bg-blue-50"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Exporter PDF
+        </Button>
+      )}
     </div>
   );
 };

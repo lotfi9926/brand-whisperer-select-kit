@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import NotificationPanel from '@/components/NotificationPanel';
+import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/components/Header';
 
 const sites = [
   { id: 'R1', name: 'Laiterie Collet (R1)' },
@@ -24,6 +26,7 @@ const sites = [
 
 const QualityControlPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedSite, setSelectedSite] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
 
@@ -32,22 +35,46 @@ const QualityControlPage = () => {
     if (!selectedSite || !date) {
       return;
     }
-    navigate('/technical-info', { 
-      state: { 
-        selectedSite,
-        analysisDate: date 
-      } 
-    });
+    
+    // Only coordinators can proceed to technical info
+    if (user?.role === 'coordinator') {
+      navigate('/technical-info', { 
+        state: { 
+          selectedSite,
+          analysisDate: date 
+        } 
+      });
+    } else {
+      // Technicians can only see existing analyses
+      const storedAnalysis = localStorage.getItem('savedAnalysis');
+      if (storedAnalysis) {
+        const analysis = JSON.parse(storedAnalysis);
+        navigate('/sample-entry', { 
+          state: { 
+            reportTitle: analysis.reportTitle || 'Rapport d\'analyse',
+            samples: analysis.samples || [],
+            brand: analysis.brand || '',
+            selectedSite,
+            analysisDate: date 
+          } 
+        });
+      } else {
+        navigate('/sample-entry', { 
+          state: { 
+            reportTitle: 'Nouveau rapport',
+            samples: [],
+            brand: '',
+            selectedSite,
+            analysisDate: date 
+          } 
+        });
+      }
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-[#0091CA] text-white py-6">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-2">MAISON COLLET</h1>
-          <h2 className="text-xl">Contrôle Qualité Microbiologique</h2>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -112,8 +139,14 @@ const QualityControlPage = () => {
                 className="bg-[#0091CA] hover:bg-[#007AA8] w-full sm:w-auto"
               >
                 <Check className="w-4 h-4 mr-2" />
-                Valider
+                {user?.role === 'coordinator' ? 'Créer une nouvelle analyse' : 'Accéder aux analyses'}
               </Button>
+              
+              {user?.role === 'technician' && (
+                <div className="text-sm text-amber-600 mt-2">
+                  En tant que technicien, vous pouvez uniquement accéder aux analyses existantes pour compléter les données.
+                </div>
+              )}
             </form>
           </div>
 
