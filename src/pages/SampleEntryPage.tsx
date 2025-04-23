@@ -1,13 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { addDays, format } from 'date-fns';
 import BatchNumbers from '@/components/BatchNumbers';
+import SamplesTable from '@/components/SamplesTable';
+import { addDays, format } from 'date-fns';
+
+const GF_PRODUCTS = [
+  'Crème dessert vanille',
+  'Crème dessert chocolat',
+  'Crème dessert caramel'
+];
 
 interface Sample {
   id: number;
@@ -24,12 +29,6 @@ interface Sample {
   enterobacteria: string;
   yeastMold: string;
 }
-
-const GF_PRODUCTS = [
-  'Crème dessert vanille',
-  'Crème dessert chocolat',
-  'Crème dessert caramel'
-];
 
 const SampleEntryPage = () => {
   const { toast } = useToast();
@@ -184,175 +183,13 @@ const SampleEntryPage = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-[#0091CA] text-white">
-                  <TableHead className="text-white" style={{ minWidth: "80px" }}>N° Échantillon</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "200px" }}>Produit</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Heure de prêt</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Fabrication</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "150px" }}>DLC</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Odeur (N/NC)</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Texture (N/NC)</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Goût (N/NC)</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Aspect (N/NC)</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "80px" }}>pH</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Entérobactéries</TableHead>
-                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Levures/Moisissures</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {samples.length > 0 ? (
-                  samples.map((sample) => (
-                    <TableRow key={sample.id}>
-                      <TableCell style={{ minWidth: "80px" }}>
-                        <Input 
-                          value={sample.number} 
-                          onChange={(e) => updateSample(sample.id, 'number', e.target.value)} 
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "200px" }}>
-                        {isGrandFrais ? (
-                          <Select
-                            value={sample.product}
-                            onValueChange={(value) => updateSample(sample.id, 'product', value)}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Sélectionner un produit" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white">
-                              {GF_PRODUCTS.map((product) => (
-                                <SelectItem key={product} value={product}>
-                                  {product}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input 
-                            value={sample.product} 
-                            onChange={(e) => updateSample(sample.id, 'product', e.target.value)} 
-                            className="w-full"
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell style={{ minWidth: "120px" }}>
-                        <Input 
-                          type="time"
-                          value={sample.readyTime} 
-                          onChange={(e) => updateSample(sample.id, 'readyTime', e.target.value)} 
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "150px" }}>
-                        <Input 
-                          type="date"
-                          value={sample.fabrication} 
-                          onChange={(e) => updateSample(sample.id, 'fabrication', e.target.value)} 
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "150px" }}>
-                        <Input 
-                          type="date"
-                          value={sample.dlc} 
-                          onChange={(e) => updateSample(sample.id, 'dlc', e.target.value)} 
-                          className="w-full"
-                          readOnly={isGrandFrais}
-                          className={isGrandFrais ? "w-full bg-gray-100" : "w-full"}
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "120px" }}>
-                        <Button 
-                          onClick={() => toggleConformity(sample.id, 'smell')}
-                          className={`w-full ${sample.smell === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                        >
-                          {sample.smell === 'N' ? (
-                            <Check className="w-4 h-4 mr-2" />
-                          ) : (
-                            <X className="w-4 h-4 mr-2" />
-                          )}
-                          {sample.smell}
-                        </Button>
-                      </TableCell>
-                      <TableCell style={{ minWidth: "120px" }}>
-                        <Button 
-                          onClick={() => toggleConformity(sample.id, 'texture')}
-                          className={`w-full ${sample.texture === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                        >
-                          {sample.texture === 'N' ? (
-                            <Check className="w-4 h-4 mr-2" />
-                          ) : (
-                            <X className="w-4 h-4 mr-2" />
-                          )}
-                          {sample.texture}
-                        </Button>
-                      </TableCell>
-                      <TableCell style={{ minWidth: "120px" }}>
-                        <Button 
-                          onClick={() => toggleConformity(sample.id, 'taste')}
-                          className={`w-full ${sample.taste === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                        >
-                          {sample.taste === 'N' ? (
-                            <Check className="w-4 h-4 mr-2" />
-                          ) : (
-                            <X className="w-4 h-4 mr-2" />
-                          )}
-                          {sample.taste}
-                        </Button>
-                      </TableCell>
-                      <TableCell style={{ minWidth: "120px" }}>
-                        <Button 
-                          onClick={() => toggleConformity(sample.id, 'aspect')}
-                          className={`w-full ${sample.aspect === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
-                        >
-                          {sample.aspect === 'N' ? (
-                            <Check className="w-4 h-4 mr-2" />
-                          ) : (
-                            <X className="w-4 h-4 mr-2" />
-                          )}
-                          {sample.aspect}
-                        </Button>
-                      </TableCell>
-                      <TableCell style={{ minWidth: "80px" }}>
-                        <Input 
-                          value={sample.ph} 
-                          onChange={(e) => updateSample(sample.id, 'ph', e.target.value)} 
-                          className="w-full"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          max="14"
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "150px" }}>
-                        <Input 
-                          value={sample.enterobacteria} 
-                          onChange={(e) => updateSample(sample.id, 'enterobacteria', e.target.value)} 
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell style={{ minWidth: "150px" }}>
-                        <Input 
-                          value={sample.yeastMold} 
-                          onChange={(e) => updateSample(sample.id, 'yeastMold', e.target.value)} 
-                          className="w-full"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={12} className="text-center py-4">
-                      Aucun échantillon. Cliquez sur "Ajouter un échantillon" pour commencer.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <SamplesTable
+            samples={samples}
+            isGrandFrais={isGrandFrais}
+            GF_PRODUCTS={GF_PRODUCTS}
+            updateSample={updateSample}
+            toggleConformity={toggleConformity}
+          />
 
           {samples.length > 0 && (
             <div className="mt-4">
