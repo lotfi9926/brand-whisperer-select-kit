@@ -63,17 +63,6 @@ const SampleEntryPage = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <BatchNumbers 
-            waterPeptone={waterPeptone}
-            setWaterPeptone={setWaterPeptone}
-            petriDishes={petriDishes}
-            setPetriDishes={setPetriDishes}
-            VRBGGel={VRBGGel}
-            setVRBGGel={setVRBGGel}
-            YGCGel={YGCGel}
-            setYGCGel={setYGCGel}
-          />
-
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-medium">Saisie des Échantillons</h2>
             <SampleActionButtons 
@@ -102,6 +91,17 @@ const SampleEntryPage = () => {
               </Button>
             </div>
           )}
+
+          <BatchNumbers 
+            waterPeptone={waterPeptone}
+            setWaterPeptone={setWaterPeptone}
+            petriDishes={petriDishes}
+            setPetriDishes={setPetriDishes}
+            VRBGGel={VRBGGel}
+            setVRBGGel={setVRBGGel}
+            YGCGel={YGCGel}
+            setYGCGel={setYGCGel}
+          />
         </div>
       </main>
     </div>
@@ -109,3 +109,4 @@ const SampleEntryPage = () => {
 };
 
 export default SampleEntryPage;
+
