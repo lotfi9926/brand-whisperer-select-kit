@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -92,9 +91,8 @@ const SampleTableRow: React.FC<SampleTableRowProps> = ({
           type="date"
           value={sample.dlc} 
           onChange={(e) => updateSample(sample.id, 'dlc', e.target.value)} 
-          className="w-full"
-          readOnly={isGrandFrais}
           className={isGrandFrais ? "w-full bg-gray-100" : "w-full"}
+          readOnly={isGrandFrais}
         />
       </TableCell>
       <TableCell className="min-w-[120px]">

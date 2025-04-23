@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Check } from 'lucide-react';
@@ -41,7 +40,7 @@ const SampleEntryPage = () => {
   const [petriDishes, setPetriDishes] = useState<string>('');
   const [VRBGGel, setVRBGGel] = useState<string>('');
   const [YGCGel, setYGCGel] = useState<string>('');
-  
+
   useEffect(() => {
     if (savedSamples && savedSamples.length > 0) {
       setSamples(savedSamples);
