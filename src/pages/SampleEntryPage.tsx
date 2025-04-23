@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Check, X } from 'lucide-react';
@@ -7,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Sample {
   id: number;
@@ -15,14 +15,20 @@ interface Sample {
   readyTime: string;
   fabrication: string;
   dlc: string;
-  smell: string; // 'N' or 'NC'
-  texture: string; // 'N' or 'NC'
-  taste: string; // 'N' or 'NC'
-  aspect: string; // 'N' or 'NC'
+  smell: string;
+  texture: string;
+  taste: string;
+  aspect: string;
   ph: string;
   enterobacteria: string;
   yeastMold: string;
 }
+
+const GF_PRODUCTS = [
+  'Crème dessert vanille',
+  'Crème dessert chocolat',
+  'Crème dessert caramel'
+];
 
 const SampleEntryPage = () => {
   const { toast } = useToast();
@@ -64,12 +70,14 @@ const SampleEntryPage = () => {
   };
   
   const handleSave = () => {
-    // In a real app, save the samples to database
     toast({
       title: "Samples saved",
       description: `${samples.length} échantillons enregistrés avec succès.`,
     });
   };
+
+  const { brand } = location.state || {};
+  const isGrandFrais = brand === '1';
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,11 +146,29 @@ const SampleEntryPage = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Input 
-                          value={sample.product} 
-                          onChange={(e) => updateSample(sample.id, 'product', e.target.value)} 
-                          className="w-full"
-                        />
+                        {isGrandFrais ? (
+                          <Select
+                            value={sample.product}
+                            onValueChange={(value) => updateSample(sample.id, 'product', value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Sélectionner un produit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {GF_PRODUCTS.map((product) => (
+                                <SelectItem key={product} value={product}>
+                                  {product}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input 
+                            value={sample.product} 
+                            onChange={(e) => updateSample(sample.id, 'product', e.target.value)} 
+                            className="w-full"
+                          />
+                        )}
                       </TableCell>
                       <TableCell>
                         <Input 

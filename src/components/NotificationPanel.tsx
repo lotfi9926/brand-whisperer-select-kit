@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -54,7 +53,7 @@ const NotificationPanel = () => {
               {pendingReadings.map((reading) => (
                 <TableRow key={reading.id}>
                   <TableCell>{reading.day}</TableCell>
-                  <TableCell>{reading.text}</TableCell>
+                  <TableCell>{reading.test}</TableCell>
                   <TableCell>
                     <span className="font-medium">{reading.count}</span> échantillons en attente
                   </TableCell>
