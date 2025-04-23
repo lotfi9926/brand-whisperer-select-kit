@@ -1,81 +1,124 @@
 
 import React from 'react';
-import { Brand, calculateOverallRating } from '@/utils/brandData';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Check, CheckSquare } from 'lucide-react';
+import {
+  Chart,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+} from "chart.js";
+import { Radar } from "react-chartjs-2";
+import { Card } from "@/components/ui/card";
 
-interface ResultsSummaryProps {
-  selectedBrands: Brand[];
-  onClear: () => void;
-  onSave?: () => void;
+// Register Chart.js components
+Chart.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+
+interface ScoresProps {
+  quality: number;
+  reputation: number;
+  sustainability: number;
+  innovation: number;
+  customerService: number;
 }
 
-const ResultsSummary: React.FC<ResultsSummaryProps> = ({ selectedBrands, onClear, onSave }) => {
-  if (selectedBrands.length === 0) {
-    return null;
-  }
+interface ResultsSummaryProps {
+  title: string;
+  description: string;
+  scores: ScoresProps;
+  isLoading?: boolean;
+}
+
+const ResultsSummary: React.FC<ResultsSummaryProps> = ({
+  title,
+  description,
+  scores,
+  isLoading = false,
+}) => {
   
-  // Find the brand with the highest overall rating
-  const getBestBrand = () => {
-    if (selectedBrands.length === 0) return null;
-    
-    return selectedBrands.reduce((best, current) => {
-      const bestRating = parseFloat(calculateOverallRating(best.rating));
-      const currentRating = parseFloat(calculateOverallRating(current.rating));
-      return currentRating > bestRating ? current : best;
-    }, selectedBrands[0]);
+  const defaultScores: ScoresProps = {
+    quality: 0,
+    reputation: 0,
+    sustainability: 0,
+    innovation: 0,
+    customerService: 0
+  };
+  
+  // Use defaultScores if scores is an empty object
+  const validScores = Object.keys(scores).length === 0 ? defaultScores : scores;
+  
+  const data = {
+    labels: ['Quality', 'Reputation', 'Sustainability', 'Innovation', 'Customer Service'],
+    datasets: [
+      {
+        label: 'Brand Score',
+        data: [
+          validScores.quality,
+          validScores.reputation,
+          validScores.sustainability,
+          validScores.innovation,
+          validScores.customerService,
+        ],
+        backgroundColor: 'rgba(14, 165, 233, 0.2)',
+        borderColor: 'rgba(14, 165, 233, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(14, 165, 233, 1)',
+      },
+    ],
   };
 
-  const bestBrand = getBestBrand();
+  const options = {
+    scales: {
+      r: {
+        angleLines: {
+          color: 'rgba(200, 200, 200, 0.3)',
+        },
+        grid: {
+          color: 'rgba(200, 200, 200, 0.3)',
+        },
+        pointLabels: {
+          font: {
+            size: 12,
+          },
+          color: 'rgba(100, 100, 100, 1)',
+        },
+        suggestedMin: 0,
+        suggestedMax: 100,
+        ticks: {
+          stepSize: 20,
+          backdropColor: 'transparent',
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+  };
 
   return (
-    <Card className="w-full mb-6 brand-shadow animate-fade-in">
-      <CardHeader className="bg-brand-accent pb-4">
-        <CardTitle className="text-xl text-center">Analysis Results</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-6 space-y-4">
-        {selectedBrands.length > 1 ? (
-          <>
-            <div className="text-center">
-              <p className="mb-2">Based on overall ratings:</p>
-              <div className="inline-block bg-brand-light rounded-lg p-4">
-                <div className="font-bold text-lg text-brand-primary mb-1">Recommended Choice</div>
-                <div className="flex items-center justify-center gap-3">
-                  <img src={bestBrand?.logo} alt={bestBrand?.name} className="h-8" />
-                  <span className="text-xl font-semibold">{bestBrand?.name}</span>
-                </div>
-                <div className="mt-2 text-sm">
-                  Overall Score: <span className="font-bold text-brand-primary">{calculateOverallRating(bestBrand?.rating || {})}</span>
-                </div>
-              </div>
+    <Card className="p-6 h-full overflow-hidden">
+      <div className="flex flex-col h-full">
+        <h2 className="text-xl font-bold mb-2">{title}</h2>
+        <p className="text-muted-foreground mb-4">{description}</p>
+        <div className="flex-grow flex items-center justify-center w-full">
+          {isLoading ? (
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="h-48 w-48 rounded-full bg-muted"></div>
+              <div className="mt-4 h-4 w-32 bg-muted rounded"></div>
             </div>
-            <div className="pt-4 flex items-center justify-center flex-wrap gap-4">
-              <div className="text-center">
-                <span className="block text-sm text-muted-foreground mb-1">Total brands compared</span>
-                <span className="text-2xl font-bold">{selectedBrands.length}</span>
-              </div>
-              <div className="h-10 border-r border-muted"></div>
-              <div className="text-center">
-                <span className="block text-sm text-muted-foreground mb-1">Ratings analyzed</span>
-                <span className="text-2xl font-bold">{selectedBrands.length * 5}</span>
-              </div>
+          ) : (
+            <div className="w-full max-w-md mx-auto">
+              <Radar data={data} options={options} />
             </div>
-          </>
-        ) : (
-          <p className="text-center">Select at least one more brand to see comparison results.</p>
-        )}
-        
-        <div className="flex justify-center pt-2 gap-4">
-          <Button variant="outline" onClick={onClear}>Clear Selection</Button>
-          {onSave && (
-            <Button className="bg-brand-primary hover:bg-brand-dark" onClick={onSave}>
-              <CheckSquare className="mr-2 h-4 w-4" />
-              Save Results
-            </Button>
           )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };
