@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const pendingReadings = [
   { id: 1, day: 'Lundi', test: 'Entérobactéries (24h)', count: 3 },
@@ -22,9 +24,35 @@ const getCurrentWeekNumber = () => {
   return Math.floor(diff / oneWeek) + 1;
 };
 
+interface SavedAnalysis {
+  reportTitle: string;
+  samples: any[];
+  date: string;
+}
+
 const NotificationPanel = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const currentWeek = getCurrentWeekNumber();
+  const [savedAnalysis, setSavedAnalysis] = useState<SavedAnalysis | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('savedAnalysis');
+    if (saved) {
+      setSavedAnalysis(JSON.parse(saved));
+    }
+  }, []);
+
+  const handleContinueAnalysis = () => {
+    if (savedAnalysis) {
+      navigate('/sample-entry', { 
+        state: { 
+          reportTitle: savedAnalysis.reportTitle,
+          samples: savedAnalysis.samples 
+        } 
+      });
+    }
+  };
 
   return (
     <Card>
@@ -33,34 +61,59 @@ const NotificationPanel = () => {
         className="w-full flex justify-between items-center p-4"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="font-medium">Notifications - Semaine {currentWeek}</span>
+        <span className="font-medium">Notifications & Analyses en cours</span>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </Button>
       
       {isOpen && (
         <CardContent className="p-4">
-          <h3 className="font-medium text-lg mb-4">Lectures en attente</h3>
-          
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Jour</TableHead>
-                <TableHead>Test</TableHead>
-                <TableHead>Échantillons</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pendingReadings.map((reading) => (
-                <TableRow key={reading.id}>
-                  <TableCell>{reading.day}</TableCell>
-                  <TableCell>{reading.test}</TableCell>
-                  <TableCell>
-                    <span className="font-medium">{reading.count}</span> échantillons en attente
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Tabs defaultValue="pending">
+            <TabsList className="mb-4">
+              <TabsTrigger value="pending">Lectures en attente</TabsTrigger>
+              <TabsTrigger value="ongoing">Analyses en cours</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="pending">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Jour</TableHead>
+                    <TableHead>Test</TableHead>
+                    <TableHead>Échantillons</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingReadings.map((reading) => (
+                    <TableRow key={reading.id}>
+                      <TableCell>{reading.day}</TableCell>
+                      <TableCell>{reading.test}</TableCell>
+                      <TableCell>
+                        <span className="font-medium">{reading.count}</span> échantillons en attente
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="ongoing">
+              {savedAnalysis ? (
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg">
+                    <h3 className="font-medium text-lg mb-2">{savedAnalysis.reportTitle}</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      Dernière modification: {new Date(savedAnalysis.date).toLocaleDateString()}
+                    </p>
+                    <Button onClick={handleContinueAnalysis}>
+                      Continuer l'analyse
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p>Aucune analyse en cours</p>
+              )}
+            </TabsContent>
+          </Tabs>
         </CardContent>
       )}
     </Card>

@@ -38,9 +38,10 @@ const SampleEntryPage = () => {
   const [samples, setSamples] = useState<Sample[]>([]);
   
   const addSample = () => {
+    const sampleNumber = (samples.length + 1).toString();
     const newSample: Sample = {
       id: Date.now(),
-      number: '',
+      number: sampleNumber,
       product: '',
       readyTime: '',
       fabrication: '',
@@ -70,10 +71,33 @@ const SampleEntryPage = () => {
   };
   
   const handleSave = () => {
+    const isValidSamples = samples.every(sample => 
+      sample.number && 
+      sample.product && 
+      sample.readyTime && 
+      sample.fabrication
+    );
+
+    if (!isValidSamples) {
+      toast({
+        title: "Données incomplètes",
+        description: "Veuillez remplir au moins les 4 premières colonnes pour chaque échantillon.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    localStorage.setItem('savedAnalysis', JSON.stringify({
+      samples,
+      reportTitle,
+      date: new Date().toISOString()
+    }));
+
     toast({
-      title: "Samples saved",
+      title: "Analyse sauvegardée",
       description: `${samples.length} échantillons enregistrés avec succès.`,
     });
+    navigate('/');
   };
 
   const { brand } = location.state || {};
