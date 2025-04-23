@@ -1,13 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Check, X } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { addDays, format } from 'date-fns';
+import BatchNumbers from '@/components/BatchNumbers';
 
 interface Sample {
   id: number;
@@ -36,9 +36,13 @@ const SampleEntryPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { reportTitle, samples: savedSamples, brand } = location.state || { reportTitle: '', samples: [], brand: '' };
-  const [samples, setSamples] = useState<Sample[]>([]);
   
-  // Load saved samples if they exist
+  const [samples, setSamples] = useState<Sample[]>([]);
+  const [waterPeptone, setWaterPeptone] = useState<string>('');
+  const [petriDishes, setPetriDishes] = useState<string>('');
+  const [VRBGGel, setVRBGGel] = useState<string>('');
+  const [YGCGel, setYGCGel] = useState<string>('');
+  
   useEffect(() => {
     if (savedSamples && savedSamples.length > 0) {
       setSamples(savedSamples);
@@ -71,7 +75,6 @@ const SampleEntryPage = () => {
       if (sample.id === id) {
         const updatedSample = { ...sample, [field]: value };
         
-        // Auto-calculate DLC for Grand Frais (add 60 days to fabrication date)
         if (brand === '1' && field === 'fabrication' && value) {
           try {
             const fabricationDate = new Date(value);
@@ -115,6 +118,12 @@ const SampleEntryPage = () => {
       samples,
       reportTitle,
       brand,
+      batchNumbers: {
+        waterPeptone,
+        petriDishes,
+        VRBGGel,
+        YGCGel
+      },
       date: new Date().toISOString()
     }));
 
@@ -138,6 +147,17 @@ const SampleEntryPage = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow p-6">
+          <BatchNumbers 
+            waterPeptone={waterPeptone}
+            setWaterPeptone={setWaterPeptone}
+            petriDishes={petriDishes}
+            setPetriDishes={setPetriDishes}
+            VRBGGel={VRBGGel}
+            setVRBGGel={setVRBGGel}
+            YGCGel={YGCGel}
+            setYGCGel={setYGCGel}
+          />
+
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-medium">Saisie des Échantillons</h2>
             <div className="flex gap-2">

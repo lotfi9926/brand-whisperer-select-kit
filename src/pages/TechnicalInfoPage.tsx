@@ -34,10 +34,6 @@ const TechnicalInfoPage = () => {
   const { selectedSite, analysisDate } = (location.state as TechnicalInfoProps) || {};
 
   const [brand, setBrand] = useState<string>('');
-  const [waterPeptone, setWaterPeptone] = useState<string>('');
-  const [petriDishes, setPetriDishes] = useState<string>('');
-  const [VRBGGel, setVRBGGel] = useState<string>('');
-  const [YGCGel, setYGCGel] = useState<string>('');
   const [reportTitle, setReportTitle] = useState<string>('Formulaire contrôle microbiologique – Dessert Grand Frais (GF)');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,12 +52,6 @@ const TechnicalInfoPage = () => {
       state: {
         ...location.state,
         brand,
-        batchNumbers: {
-          waterPeptone,
-          petriDishes,
-          VRBGGel,
-          YGCGel
-        },
         reportTitle
       }
     });
@@ -95,44 +85,6 @@ const TechnicalInfoPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="waterPeptone">Numéro de lot - Eau péptonée</Label>
-                  <Input 
-                    id="waterPeptone" 
-                    value={waterPeptone} 
-                    onChange={(e) => setWaterPeptone(e.target.value)} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="petriDishes">Numéro de lot - Boîtes de Petri</Label>
-                  <Input 
-                    id="petriDishes" 
-                    value={petriDishes} 
-                    onChange={(e) => setPetriDishes(e.target.value)} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="VRBGGel">Numéro de lot - Gélose VRBG</Label>
-                  <Input 
-                    id="VRBGGel" 
-                    value={VRBGGel} 
-                    onChange={(e) => setVRBGGel(e.target.value)} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="YGCGel">Numéro de lot - Gélose YGC</Label>
-                  <Input 
-                    id="YGCGel" 
-                    value={YGCGel} 
-                    onChange={(e) => setYGCGel(e.target.value)} 
-                  />
-                </div>
               </div>
               
               <div className="space-y-2">
