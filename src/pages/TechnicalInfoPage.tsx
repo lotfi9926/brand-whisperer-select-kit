@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Check } from 'lucide-react';
@@ -53,11 +52,9 @@ const TechnicalInfoPage = () => {
       return;
     }
 
-    // In a real app, save this data to context/store
     navigate('/sample-entry', {
       state: {
-        selectedSite,
-        analysisDate,
+        ...location.state,
         brand,
         batchNumbers: {
           waterPeptone,

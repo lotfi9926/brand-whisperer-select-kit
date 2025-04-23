@@ -32,8 +32,6 @@ const QualityControlPage = () => {
     if (!selectedSite || !date) {
       return;
     }
-    // In a real app, you would save this data to context or store
-    // For now, we'll just navigate to the next page
     navigate('/technical-info', { 
       state: { 
         selectedSite,
@@ -44,9 +42,10 @@ const QualityControlPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-[#0091CA] text-white py-4">
+      <header className="bg-[#0091CA] text-white py-6">
         <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-semibold">Contrôle Qualité Microbiologique</h1>
+          <h1 className="text-3xl font-bold mb-2">MAISON COLLET</h1>
+          <h2 className="text-xl">Contrôle Qualité Microbiologique</h2>
         </div>
       </header>
 

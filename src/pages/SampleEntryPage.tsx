@@ -28,6 +28,7 @@ const SampleEntryPage = () => {
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const { reportTitle } = location.state || { reportTitle: '' };
   const [samples, setSamples] = useState<Sample[]>([]);
   
   const addSample = () => {
@@ -74,7 +75,8 @@ const SampleEntryPage = () => {
     <div className="min-h-screen bg-background">
       <header className="bg-[#0091CA] text-white py-4">
         <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-semibold">Contrôle Qualité Microbiologique</h1>
+          <h1 className="text-2xl font-semibold">MAISON COLLET</h1>
+          <h2 className="text-xl mt-2">{reportTitle}</h2>
         </div>
       </header>
 
