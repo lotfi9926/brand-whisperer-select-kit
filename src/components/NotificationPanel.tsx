@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +29,7 @@ interface SavedAnalysis {
   reportTitle: string;
   samples: any[];
   date: string;
+  brand?: string;
 }
 
 const NotificationPanel = () => {
@@ -48,7 +50,8 @@ const NotificationPanel = () => {
       navigate('/sample-entry', { 
         state: { 
           reportTitle: savedAnalysis.reportTitle,
-          samples: savedAnalysis.samples 
+          samples: savedAnalysis.samples,
+          brand: savedAnalysis.brand
         } 
       });
     }

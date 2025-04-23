@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { addDays, format } from 'date-fns';
 
 interface Sample {
   id: number;
@@ -34,8 +35,15 @@ const SampleEntryPage = () => {
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const { reportTitle } = location.state || { reportTitle: '' };
+  const { reportTitle, samples: savedSamples, brand } = location.state || { reportTitle: '', samples: [], brand: '' };
   const [samples, setSamples] = useState<Sample[]>([]);
+  
+  // Load saved samples if they exist
+  useEffect(() => {
+    if (savedSamples && savedSamples.length > 0) {
+      setSamples(savedSamples);
+    }
+  }, [savedSamples]);
   
   const addSample = () => {
     const sampleNumber = (samples.length + 1).toString();
@@ -59,9 +67,25 @@ const SampleEntryPage = () => {
   };
   
   const updateSample = (id: number, field: keyof Sample, value: string) => {
-    setSamples(samples.map(sample => 
-      sample.id === id ? { ...sample, [field]: value } : sample
-    ));
+    setSamples(samples.map(sample => {
+      if (sample.id === id) {
+        const updatedSample = { ...sample, [field]: value };
+        
+        // Auto-calculate DLC for Grand Frais (add 60 days to fabrication date)
+        if (brand === '1' && field === 'fabrication' && value) {
+          try {
+            const fabricationDate = new Date(value);
+            const dlcDate = addDays(fabricationDate, 60);
+            updatedSample.dlc = format(dlcDate, 'yyyy-MM-dd');
+          } catch (e) {
+            console.error("Error calculating DLC date:", e);
+          }
+        }
+        
+        return updatedSample;
+      }
+      return sample;
+    }));
   };
   
   const toggleConformity = (id: number, field: 'smell' | 'texture' | 'taste' | 'aspect') => {
@@ -90,6 +114,7 @@ const SampleEntryPage = () => {
     localStorage.setItem('savedAnalysis', JSON.stringify({
       samples,
       reportTitle,
+      brand,
       date: new Date().toISOString()
     }));
 
@@ -100,7 +125,6 @@ const SampleEntryPage = () => {
     navigate('/');
   };
 
-  const { brand } = location.state || {};
   const isGrandFrais = brand === '1';
 
   return (
@@ -144,32 +168,32 @@ const SampleEntryPage = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-[#0091CA] text-white">
-                  <TableHead className="text-white">N° Échantillon</TableHead>
-                  <TableHead className="text-white">Produit</TableHead>
-                  <TableHead className="text-white">Heure de prêt</TableHead>
-                  <TableHead className="text-white">Fabrication</TableHead>
-                  <TableHead className="text-white">DLC</TableHead>
-                  <TableHead className="text-white">Odeur (N/NC)</TableHead>
-                  <TableHead className="text-white">Texture (N/NC)</TableHead>
-                  <TableHead className="text-white">Goût (N/NC)</TableHead>
-                  <TableHead className="text-white">Aspect (N/NC)</TableHead>
-                  <TableHead className="text-white">pH</TableHead>
-                  <TableHead className="text-white">Entérobactéries</TableHead>
-                  <TableHead className="text-white">Levures/Moisissures</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "80px" }}>N° Échantillon</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "200px" }}>Produit</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Heure de prêt</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Fabrication</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "150px" }}>DLC</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Odeur (N/NC)</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Texture (N/NC)</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Goût (N/NC)</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "120px" }}>Aspect (N/NC)</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "80px" }}>pH</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Entérobactéries</TableHead>
+                  <TableHead className="text-white" style={{ minWidth: "150px" }}>Levures/Moisissures</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {samples.length > 0 ? (
                   samples.map((sample) => (
                     <TableRow key={sample.id}>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "80px" }}>
                         <Input 
                           value={sample.number} 
                           onChange={(e) => updateSample(sample.id, 'number', e.target.value)} 
                           className="w-full"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "200px" }}>
                         {isGrandFrais ? (
                           <Select
                             value={sample.product}
@@ -178,7 +202,7 @@ const SampleEntryPage = () => {
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Sélectionner un produit" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-white">
                               {GF_PRODUCTS.map((product) => (
                                 <SelectItem key={product} value={product}>
                                   {product}
@@ -194,7 +218,7 @@ const SampleEntryPage = () => {
                           />
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "120px" }}>
                         <Input 
                           type="time"
                           value={sample.readyTime} 
@@ -202,7 +226,7 @@ const SampleEntryPage = () => {
                           className="w-full"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "150px" }}>
                         <Input 
                           type="date"
                           value={sample.fabrication} 
@@ -210,15 +234,17 @@ const SampleEntryPage = () => {
                           className="w-full"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "150px" }}>
                         <Input 
                           type="date"
                           value={sample.dlc} 
                           onChange={(e) => updateSample(sample.id, 'dlc', e.target.value)} 
                           className="w-full"
+                          readOnly={isGrandFrais}
+                          className={isGrandFrais ? "w-full bg-gray-100" : "w-full"}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "120px" }}>
                         <Button 
                           onClick={() => toggleConformity(sample.id, 'smell')}
                           className={`w-full ${sample.smell === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
@@ -231,7 +257,7 @@ const SampleEntryPage = () => {
                           {sample.smell}
                         </Button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "120px" }}>
                         <Button 
                           onClick={() => toggleConformity(sample.id, 'texture')}
                           className={`w-full ${sample.texture === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
@@ -244,7 +270,7 @@ const SampleEntryPage = () => {
                           {sample.texture}
                         </Button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "120px" }}>
                         <Button 
                           onClick={() => toggleConformity(sample.id, 'taste')}
                           className={`w-full ${sample.taste === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
@@ -257,7 +283,7 @@ const SampleEntryPage = () => {
                           {sample.taste}
                         </Button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "120px" }}>
                         <Button 
                           onClick={() => toggleConformity(sample.id, 'aspect')}
                           className={`w-full ${sample.aspect === 'N' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white`}
@@ -270,21 +296,25 @@ const SampleEntryPage = () => {
                           {sample.aspect}
                         </Button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "80px" }}>
                         <Input 
                           value={sample.ph} 
                           onChange={(e) => updateSample(sample.id, 'ph', e.target.value)} 
                           className="w-full"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="14"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "150px" }}>
                         <Input 
                           value={sample.enterobacteria} 
                           onChange={(e) => updateSample(sample.id, 'enterobacteria', e.target.value)} 
                           className="w-full"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ minWidth: "150px" }}>
                         <Input 
                           value={sample.yeastMold} 
                           onChange={(e) => updateSample(sample.id, 'yeastMold', e.target.value)} 
