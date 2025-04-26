@@ -3,29 +3,14 @@ import React from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import SampleTableRow from './SampleTableRow';
 import { UserRole } from '@/contexts/AuthContext';
-
-interface Sample {
-  id: number;
-  number: string;
-  product: string;
-  readyTime: string;
-  fabrication: string;
-  dlc: string;
-  smell: string;
-  texture: string;
-  taste: string;
-  aspect: string;
-  ph: string;
-  enterobacteria: string;
-  yeastMold: string;
-}
+import { Sample } from '@/hooks/useSamples';
 
 interface SamplesTableProps {
   samples: Sample[];
   isGrandFrais: boolean;
   GF_PRODUCTS: string[];
-  updateSample: (id: number, field: keyof Sample, value: string) => void;
-  toggleConformity: (id: number, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
+  updateSample: (id: string, field: keyof Sample, value: string) => void;
+  toggleConformity: (id: string, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
   isLocked?: boolean;
   userRole: UserRole | 'guest';
 }

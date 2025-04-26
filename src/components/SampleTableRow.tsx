@@ -11,8 +11,8 @@ interface SampleTableRowProps {
   sample: Sample;
   isGrandFrais: boolean;
   GF_PRODUCTS: string[];
-  updateSample: (id: number, field: keyof Sample, value: string) => void;
-  toggleConformity: (id: number, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
+  updateSample: (id: string, field: keyof Sample, value: string) => void;
+  toggleConformity: (id: string, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
   isLocked: boolean;
   userRole: UserRole | 'guest';
 }

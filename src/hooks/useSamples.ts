@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { addDays, format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -5,7 +6,7 @@ import { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Sample {
-  id: number;
+  id: string;
   number: string;
   product: string;
   readyTime: string;
@@ -22,6 +23,28 @@ export interface Sample {
   modifiedAt?: string;
   modifiedBy?: string;
   status?: 'pending' | 'inProgress' | 'completed';
+}
+
+// Interface pour mapper les données de Supabase
+interface SupabaseSample {
+  id: string;
+  number: string;
+  product: string;
+  ready_time: string;
+  fabrication: string;
+  dlc: string;
+  smell: string;
+  texture: string;
+  taste: string;
+  aspect: string;
+  ph: string | null;
+  enterobacteria: string | null;
+  yeast_mold: string | null;
+  created_at: string;
+  modified_at: string;
+  modified_by: string | null;
+  status: string;
+  brand: string | null;
 }
 
 interface UseSamplesProps {
@@ -48,14 +71,28 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
         }
 
         if (data) {
-          setSamples(data.map(sample => ({
-            ...sample,
+          // Transformer les données de Supabase en Sample[]
+          const mappedSamples: Sample[] = data.map((sample: SupabaseSample) => ({
+            id: sample.id,
+            number: sample.number,
+            product: sample.product,
             readyTime: sample.ready_time,
-            yeastMold: sample.yeast_mold,
+            fabrication: sample.fabrication,
+            dlc: sample.dlc,
+            smell: sample.smell,
+            texture: sample.texture,
+            taste: sample.taste,
+            aspect: sample.aspect,
+            ph: sample.ph || '',
+            enterobacteria: sample.enterobacteria || '',
+            yeastMold: sample.yeast_mold || '',
             createdAt: sample.created_at,
             modifiedAt: sample.modified_at,
-            modifiedBy: sample.modified_by
-          })));
+            modifiedBy: sample.modified_by || undefined,
+            status: sample.status as 'pending' | 'inProgress' | 'completed'
+          }));
+          
+          setSamples(mappedSamples);
         }
       } catch (error) {
         console.error('Error loading samples:', error);
@@ -73,8 +110,7 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
   const addSample = async () => {
     const currentDate = new Date().toISOString();
     const sampleNumber = (samples.length + 1).toString();
-    const newSample: Sample = {
-      id: Date.now(),
+    const newSampleBase = {
       number: sampleNumber,
       product: '',
       readyTime: '',
@@ -87,28 +123,27 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
       ph: '',
       enterobacteria: '',
       yeastMold: '',
-      createdAt: currentDate,
-      modifiedAt: currentDate,
-      status: 'pending'
+      status: 'pending',
+      brand: brand
     };
 
     try {
       const { data, error } = await supabase
         .from('samples')
         .insert([{
-          number: newSample.number,
-          product: newSample.product,
-          ready_time: newSample.readyTime,
-          fabrication: newSample.fabrication,
-          dlc: newSample.dlc,
-          smell: newSample.smell,
-          texture: newSample.texture,
-          taste: newSample.taste,
-          aspect: newSample.aspect,
-          ph: newSample.ph,
-          enterobacteria: newSample.enterobacteria,
-          yeast_mold: newSample.yeastMold,
-          brand: brand
+          number: newSampleBase.number,
+          product: newSampleBase.product,
+          ready_time: newSampleBase.readyTime,
+          fabrication: newSampleBase.fabrication,
+          dlc: newSampleBase.dlc,
+          smell: newSampleBase.smell,
+          texture: newSampleBase.texture,
+          taste: newSampleBase.taste,
+          aspect: newSampleBase.aspect,
+          ph: newSampleBase.ph,
+          enterobacteria: newSampleBase.enterobacteria,
+          yeast_mold: newSampleBase.yeastMold,
+          brand: newSampleBase.brand
         }])
         .select()
         .single();
@@ -116,7 +151,27 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
       if (error) throw error;
 
       if (data) {
-        setSamples(prev => [data, ...prev]);
+        const newSample: Sample = {
+          id: data.id,
+          number: data.number,
+          product: data.product,
+          readyTime: data.ready_time,
+          fabrication: data.fabrication,
+          dlc: data.dlc,
+          smell: data.smell,
+          texture: data.texture,
+          taste: data.taste,
+          aspect: data.aspect,
+          ph: data.ph || '',
+          enterobacteria: data.enterobacteria || '',
+          yeastMold: data.yeast_mold || '',
+          createdAt: data.created_at,
+          modifiedAt: data.modified_at,
+          modifiedBy: data.modified_by || undefined,
+          status: data.status as 'pending' | 'inProgress' | 'completed'
+        };
+        
+        setSamples(prev => [newSample, ...prev]);
       }
 
       await addChangeHistory({
@@ -134,15 +189,36 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
     }
   };
 
-  const updateSample = async (id: number, field: keyof Sample, value: string) => {
+  const updateSample = async (id: string, field: keyof Sample, value: string) => {
     try {
       const sample = samples.find(s => s.id === id);
       if (!sample) return;
 
       const oldValue = sample[field] as string;
+      
+      // Mapper les noms de champs pour Supabase
+      const fieldMap: Record<keyof Sample, string> = {
+        readyTime: 'ready_time',
+        yeastMold: 'yeast_mold',
+        createdAt: 'created_at',
+        modifiedAt: 'modified_at',
+        modifiedBy: 'modified_by',
+        id: 'id',
+        number: 'number',
+        product: 'product', 
+        fabrication: 'fabrication',
+        dlc: 'dlc',
+        smell: 'smell',
+        texture: 'texture',
+        taste: 'taste',
+        aspect: 'aspect',
+        ph: 'ph',
+        enterobacteria: 'enterobacteria',
+        status: 'status'
+      };
+
       const updateData: any = {
-        [field === 'readyTime' ? 'ready_time' : 
-         field === 'yeastMold' ? 'yeast_mold' : field]: value,
+        [fieldMap[field]]: value,
         modified_at: new Date().toISOString()
       };
 
@@ -160,7 +236,7 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
       await addChangeHistory({
         action: 'update',
         sampleId: id,
-        field,
+        field: field.toString(),
         oldValue,
         newValue: value
       });
@@ -175,7 +251,7 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
     }
   };
 
-  const toggleConformity = async (id: number, field: 'smell' | 'texture' | 'taste' | 'aspect') => {
+  const toggleConformity = async (id: string, field: 'smell' | 'texture' | 'taste' | 'aspect') => {
     try {
       const sample = samples.find(s => s.id === id);
       if (!sample) return;
@@ -218,25 +294,29 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
     oldValue,
     newValue,
     action,
+    user,
+    role,
   }: {
-    sampleId?: number;
+    sampleId?: string;
     field?: string;
     oldValue?: string;
     newValue?: string;
     action: 'create' | 'update' | 'delete' | 'save' | 'lock_fields' | 'other';
+    user?: string;
+    role?: string;
   }) => {
     try {
       const { error } = await supabase
         .from('change_history')
-        .insert([{
+        .insert({
           sample_id: sampleId,
           field,
           old_value: oldValue,
           new_value: newValue,
           action,
-          user_name: 'Unknown',
-          role: 'guest'
-        }]);
+          user_name: user || 'Unknown',
+          role: role || 'guest'
+        });
 
       if (error) throw error;
     } catch (error) {

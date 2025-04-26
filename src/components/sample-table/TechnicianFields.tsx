@@ -9,8 +9,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 interface TechnicianFieldsProps {
   sample: Sample;
-  toggleConformity: (id: number, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
-  updateSample: (id: number, field: keyof Sample, value: string) => void;
+  toggleConformity: (id: string, field: 'smell' | 'texture' | 'taste' | 'aspect') => void;
+  updateSample: (id: string, field: keyof Sample, value: string) => void;
   isTechnician: boolean;
   alertStatus: string | null;
 }

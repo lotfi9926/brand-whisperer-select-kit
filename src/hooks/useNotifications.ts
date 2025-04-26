@@ -4,9 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-interface Notification {
+export interface Notification {
   id: string;
-  sample_id: string;
+  sample_id: string | null;
   sample_number: string;
   message: string;
   type: 'info' | 'warning' | 'urgent';
@@ -29,7 +29,11 @@ export const useNotifications = () => {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        if (data) setNotifications(data);
+        
+        if (data) {
+          // Cast the type as we know the structure
+          setNotifications(data as Notification[]);
+        }
       } catch (error) {
         console.error('Error loading notifications:', error);
       }
@@ -44,13 +48,14 @@ export const useNotifications = () => {
         { event: '*', schema: 'public', table: 'notifications' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setNotifications(prev => [payload.new as Notification, ...prev]);
+            const newNotification = payload.new as Notification;
+            setNotifications(prev => [newNotification, ...prev]);
             
             // Show toast for new notification
             toast({
-              title: payload.new.type === 'urgent' ? 'Notification urgente' : 'Notification',
-              description: payload.new.message,
-              variant: payload.new.type === 'urgent' ? 'destructive' : 'default'
+              title: newNotification.type === 'urgent' ? 'Notification urgente' : 'Notification',
+              description: newNotification.message,
+              variant: newNotification.type === 'urgent' ? 'destructive' : 'default'
             });
           }
         }

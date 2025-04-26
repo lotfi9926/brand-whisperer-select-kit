@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -10,7 +11,7 @@ import SamplePageHeader from '@/components/SamplePageHeader';
 import SampleActionButtons from '@/components/SampleActionButtons';
 import { useSamples } from '@/hooks/useSamples';
 import DownloadFormButton from '@/components/sample-form/DownloadFormButton';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 const GF_PRODUCTS = [
   'Crème dessert vanille',
@@ -105,8 +106,7 @@ const SampleEntryPage = () => {
     addChangeHistory({
       action: 'lock_fields',
       user: user?.name || 'Unknown',
-      role: user?.role || 'guest',
-      timestamp: new Date().toISOString()
+      role: user?.role || 'guest'
     });
 
     toast({

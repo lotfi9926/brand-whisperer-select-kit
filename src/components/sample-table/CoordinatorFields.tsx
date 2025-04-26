@@ -9,7 +9,7 @@ interface CoordinatorFieldsProps {
   sample: Sample;
   isGrandFrais: boolean;
   GF_PRODUCTS: string[];
-  updateSample: (id: number, field: keyof Sample, value: string) => void;
+  updateSample: (id: string, field: keyof Sample, value: string) => void;
   isCoordinator: boolean;
   isLocked: boolean;
 }
