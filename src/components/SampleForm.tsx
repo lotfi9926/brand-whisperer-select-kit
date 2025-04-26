@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
+import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
+import { useToast } from "@/components/ui/use-toast";
+import SampleFormHeader from './sample-form/SampleFormHeader';
+import SampleFormInputs from './sample-form/SampleFormInputs';
+import SampleFormActions from './sample-form/SampleFormActions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Table } from '@/components/ui/table';
 import { Plus, Save, Copy, Printer, Trash2 } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
 
 interface Sample {
   id: number;
@@ -135,78 +137,26 @@ const SampleForm = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-[#0091CA] text-white py-4">
-        <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-semibold">Identification des échantillons agro-alimentaires</h1>
-        </div>
-      </header>
+      <SampleFormHeader />
 
       <main className="container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium mb-2">Site*</label>
-              <Input 
-                placeholder="Entrer le site" 
-                value={site} 
-                onChange={(e) => setSite(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Date envoi échantillons*</label>
-              <Input 
-                type="date" 
-                value={sampleDate} 
-                onChange={(e) => setSampleDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Référence commande</label>
-              <Input 
-                placeholder="Entrer la référence" 
-                value={reference} 
-                onChange={(e) => setReference(e.target.value)}
-              />
-            </div>
-          </div>
+          <SampleFormInputs 
+            site={site}
+            setSite={setSite}
+            sampleDate={sampleDate}
+            setSampleDate={setSampleDate}
+            reference={reference}
+            setReference={setReference}
+          />
 
-          <div className="flex flex-wrap gap-2">
-            <Button 
-              className="bg-[#0091CA] hover:bg-[#007AA8]"
-              onClick={handleSave}
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Sauvegarder
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={handleAddSample}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter échantillon
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={handleCopy}
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Copier
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={handleDuplicate}
-            >
-              <Printer className="w-4 h-4 mr-2" />
-              Dupliquer le numéro
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={handleDelete}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Suppr.
-            </Button>
-          </div>
+          <SampleFormActions 
+            handleSave={handleSave}
+            handleAddSample={handleAddSample}
+            handleCopy={handleCopy}
+            handleDuplicate={handleDuplicate}
+            handleDelete={handleDelete}
+          />
 
           <div className="overflow-x-auto">
             <Table>
