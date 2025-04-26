@@ -83,6 +83,51 @@ export type Database = {
           },
         ]
       }
+      form_samples: {
+        Row: {
+          additional_details: string | null
+          analysis_date: string | null
+          break_date: string | null
+          created_at: string
+          id: string
+          lab_comment: string | null
+          label: string | null
+          nature: string | null
+          program: string | null
+          report_id: string
+          storage_temp: string | null
+          temperature: string | null
+        }
+        Insert: {
+          additional_details?: string | null
+          analysis_date?: string | null
+          break_date?: string | null
+          created_at?: string
+          id?: string
+          lab_comment?: string | null
+          label?: string | null
+          nature?: string | null
+          program?: string | null
+          report_id: string
+          storage_temp?: string | null
+          temperature?: string | null
+        }
+        Update: {
+          additional_details?: string | null
+          analysis_date?: string | null
+          break_date?: string | null
+          created_at?: string
+          id?: string
+          lab_comment?: string | null
+          label?: string | null
+          nature?: string | null
+          program?: string | null
+          report_id?: string
+          storage_temp?: string | null
+          temperature?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -120,6 +165,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sample_forms: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          reference: string | null
+          report_id: string
+          sample_date: string
+          site: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference?: string | null
+          report_id: string
+          sample_date: string
+          site: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          reference?: string | null
+          report_id?: string
+          sample_date?: string
+          site?: string
+        }
+        Relationships: []
       }
       samples: {
         Row: {

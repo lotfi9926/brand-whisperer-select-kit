@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import { useToast } from "@/hooks/use-toast";
@@ -45,24 +44,22 @@ const SampleForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Créez un ID de rapport unique
       const reportId = uuidv4();
       
-      // Enregistrez d'abord les informations du formulaire
-      const { error: formError } = await supabase
+      const { data: formData, error: formError } = await supabase
         .from('sample_forms')
         .insert({
           report_id: reportId,
           site: site,
           sample_date: sampleDate,
           reference: reference,
-          created_by: user?.id || null,
-          created_at: new Date().toISOString()
-        });
+          created_by: user?.id
+        })
+        .select('id')
+        .single();
         
       if (formError) throw formError;
       
-      // Ensuite, enregistrez tous les échantillons associés à ce formulaire
       if (samples.length > 0) {
         const samplesData = samples.map(sample => ({
           report_id: reportId,
@@ -86,8 +83,7 @@ const SampleForm = () => {
       
       toast({
         title: "Sauvegardé",
-        description: "Les informations ont été sauvegardées avec succès.",
-        variant: "default"
+        description: "Les informations ont été sauvegardées avec succès."
       });
       
     } catch (error) {
