@@ -10,6 +10,7 @@ import SamplePageHeader from '@/components/SamplePageHeader';
 import SampleActionButtons from '@/components/SampleActionButtons';
 import { useSamples } from '@/hooks/useSamples';
 import DownloadFormButton from '@/components/sample-form/DownloadFormButton';
+import { supabase } from '@/lib/supabase';
 
 const GF_PRODUCTS = [
   'Crème dessert vanille',
@@ -52,41 +53,41 @@ const SampleEntryPage = () => {
     brand
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateSamples()) return;
 
-    const currentDate = new Date().toISOString();
-    
-    addChangeHistory({
-      action: 'save',
-      user: user?.name || 'Unknown',
-      role: user?.role || 'guest',
-      timestamp: currentDate
-    });
+    try {
+      // Save batch numbers
+      const { error: batchError } = await supabase
+        .from('batch_numbers')
+        .insert([{
+          report_id: reportTitle,
+          water_peptone: waterPeptone,
+          petri_dishes: petriDishes,
+          vrbg_gel: VRBGGel,
+          ygc_gel: YGCGel
+        }]);
 
-    localStorage.setItem('savedAnalysis', JSON.stringify({
-      samples,
-      reportTitle,
-      brand,
-      batchNumbers: {
-        waterPeptone,
-        petriDishes,
-        VRBGGel,
-        YGCGel
-      },
-      date: currentDate,
-      lockedByCoordinator: isLocked,
-      lastModified: {
+      if (batchError) throw batchError;
+
+      addChangeHistory({
+        action: 'save',
         user: user?.name || 'Unknown',
-        role: user?.role || 'guest',
-        timestamp: currentDate
-      }
-    }));
+        role: user?.role || 'guest'
+      });
 
-    toast({
-      title: "Analyse sauvegardée",
-      description: `${samples.length} échantillons enregistrés avec succès.`,
-    });
+      toast({
+        title: "Analyse sauvegardée",
+        description: `${samples.length} échantillons enregistrés avec succès.`,
+      });
+    } catch (error) {
+      console.error('Error saving analysis:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder l'analyse",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLockCoordinatorFields = () => {

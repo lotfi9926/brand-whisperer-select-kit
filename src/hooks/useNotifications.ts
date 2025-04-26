@@ -2,36 +2,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { differenceInDays, differenceInHours, parseISO } from 'date-fns';
-
-export interface Sample {
-  id: number;
-  number: string;
-  product: string;
-  readyTime: string;
-  fabrication: string;
-  dlc: string;
-  smell: string;
-  texture: string;
-  taste: string;
-  aspect: string;
-  ph: string;
-  enterobacteria: string;
-  yeastMold: string;
-  createdAt: string;
-  modifiedAt: string;
-  status: 'pending' | 'inProgress' | 'completed';
-  assignedTo?: string;
-  modifiedBy?: string;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 interface Notification {
   id: string;
-  sampleId: number;
-  sampleNumber: string;
+  sample_id: string;
+  sample_number: string;
   message: string;
   type: 'info' | 'warning' | 'urgent';
-  createdAt: string;
+  created_at: string;
   read: boolean;
 }
 
@@ -40,135 +19,122 @@ export const useNotifications = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Load notifications from localStorage
+  // Load notifications from Supabase and subscribe to changes
   useEffect(() => {
-    const storedNotifications = localStorage.getItem('qc_notifications');
-    if (storedNotifications) {
-      setNotifications(JSON.parse(storedNotifications));
-    }
-  }, []);
-
-  // Save notifications to localStorage when they change
-  useEffect(() => {
-    if (notifications.length > 0) {
-      localStorage.setItem('qc_notifications', JSON.stringify(notifications));
-    }
-  }, [notifications]);
-
-  // Check for pending samples that need notifications
-  useEffect(() => {
-    const checkSamples = () => {
+    const loadNotifications = async () => {
       try {
-        const storedAnalysis = localStorage.getItem('savedAnalysis');
-        if (!storedAnalysis) return;
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-        const { samples } = JSON.parse(storedAnalysis);
-        const currentDate = new Date();
-        
-        samples.forEach((sample: Sample) => {
-          if (!sample.createdAt) return;
-          
-          const sampleDate = parseISO(sample.createdAt);
-          const hoursSince = differenceInHours(currentDate, sampleDate);
-          const daysSince = differenceInDays(currentDate, sampleDate);
-          
-          // Check for enterobacteria notification (24h)
-          if (hoursSince >= 24 && !sample.enterobacteria && !notifications.some(n => 
-            n.sampleId === sample.id && n.type === 'warning' && !n.read)) {
-            addNotification({
-              sampleId: sample.id,
-              sampleNumber: sample.number,
-              message: `L'échantillon ${sample.number} (${sample.product}) nécessite une analyse des entérobactéries (24h écoulées)`,
-              type: 'warning'
-            });
-          }
-          
-          // Check for yeast/mold notification (5 days)
-          if (daysSince >= 5 && !sample.yeastMold && !notifications.some(n => 
-            n.sampleId === sample.id && n.type === 'urgent' && !n.read)) {
-            addNotification({
-              sampleId: sample.id,
-              sampleNumber: sample.number,
-              message: `URGENT: L'échantillon ${sample.number} (${sample.product}) nécessite une analyse des levures/moisissures (5 jours écoulés)`,
-              type: 'urgent'
-            });
-          }
-        });
+        if (error) throw error;
+        if (data) setNotifications(data);
       } catch (error) {
-        console.error('Error checking samples for notifications:', error);
+        console.error('Error loading notifications:', error);
       }
     };
 
-    // Check immediately and then every 30 minutes
-    checkSamples();
-    const interval = setInterval(checkSamples, 30 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, [user, notifications]);
+    loadNotifications();
 
-  const addNotification = ({ 
-    sampleId, 
-    sampleNumber, 
-    message, 
-    type = 'info' 
-  }: {
-    sampleId: number;
-    sampleNumber: string;
-    message: string;
-    type?: 'info' | 'warning' | 'urgent';
-  }) => {
-    const newNotification: Notification = {
-      id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      sampleId,
-      sampleNumber,
-      message,
-      type,
-      createdAt: new Date().toISOString(),
-      read: false
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    
-    // Show toast notification
-    toast({
-      title: type === 'urgent' ? 'Notification urgente' : 'Notification',
-      description: message,
-      variant: type === 'urgent' ? 'destructive' : 'default'
-    });
-    
-    return newNotification.id;
-  };
-
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true } 
-          : notification
+    // Subscribe to realtime notifications
+    const channel = supabase
+      .channel('notifications-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'notifications' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setNotifications(prev => [payload.new as Notification, ...prev]);
+            
+            // Show toast for new notification
+            toast({
+              title: payload.new.type === 'urgent' ? 'Notification urgente' : 'Notification',
+              description: payload.new.message,
+              variant: payload.new.type === 'urgent' ? 'destructive' : 'default'
+            });
+          }
+        }
       )
-    );
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, read: true } 
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('read', false);
+
+      if (error) throw error;
+
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, read: true }))
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
-  const deleteNotification = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.filter(notification => notification.id !== notificationId)
-    );
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      setNotifications(prev => 
+        prev.filter(notification => notification.id !== notificationId)
+      );
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
   };
 
-  const clearAllNotifications = () => {
-    setNotifications([]);
+  const clearAllNotifications = async () => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .neq('id', 'none');
+
+      if (error) throw error;
+
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
+    }
   };
 
   return {
     notifications,
     unreadCount: notifications.filter(n => !n.read).length,
-    addNotification,
     markAsRead,
     markAllAsRead,
     deleteNotification,
