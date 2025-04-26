@@ -2,7 +2,7 @@
 import React from 'react';
 import { TableRow } from '@/components/ui/table';
 import { UserRole } from '@/contexts/AuthContext';
-import { Sample } from '@/hooks/useSamples';
+import { Sample } from '@/types/samples';
 import { useSampleAlertStatus } from '@/hooks/useSampleAlertStatus';
 import { CoordinatorFields } from './sample-table/CoordinatorFields';
 import { TechnicianFields } from './sample-table/TechnicianFields';

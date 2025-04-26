@@ -3,7 +3,7 @@ import React from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import SampleTableRow from './SampleTableRow';
 import { UserRole } from '@/contexts/AuthContext';
-import { Sample } from '@/hooks/useSamples';
+import { Sample } from '@/types/samples';
 
 interface SamplesTableProps {
   samples: Sample[];

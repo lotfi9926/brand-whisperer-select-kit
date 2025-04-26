@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TableCell } from '@/components/ui/table';
 import { Check, X, AlertTriangle, AlertCircle } from 'lucide-react';
-import { Sample } from '@/hooks/useSamples';
+import { Sample } from '@/types/samples';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TechnicianFieldsProps {

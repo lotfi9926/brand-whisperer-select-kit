@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Sample } from '@/hooks/useSamples';
+import { Sample } from '@/types/samples';
 
 interface DownloadFormButtonProps {
   samples: Sample[];

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -78,7 +79,7 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
       ph: '',
       enterobacteria: '',
       yeastMold: '',
-      status: 'pending',
+      status: 'pending' as const,
       brand: brand
     };
 
@@ -123,7 +124,10 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
           createdAt: data.created_at,
           modifiedAt: data.modified_at,
           modifiedBy: data.modified_by || undefined,
-          status: data.status as 'pending' | 'inProgress' | 'completed'
+          status: data.status as 'pending' | 'inProgress' | 'completed',
+          assignedTo: data.assigned_to || undefined,
+          reportTitle: data.report_title || undefined,
+          brand: data.brand || undefined
         };
         
         setSamples(prev => [newSample, ...prev]);
@@ -168,7 +172,10 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
         aspect: 'aspect',
         ph: 'ph',
         enterobacteria: 'enterobacteria',
-        status: 'status'
+        status: 'status',
+        assignedTo: 'assigned_to',
+        reportTitle: 'report_title',
+        brand: 'brand'
       };
 
       const updateData: any = {
