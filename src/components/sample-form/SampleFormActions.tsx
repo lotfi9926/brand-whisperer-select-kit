@@ -9,6 +9,7 @@ interface SampleFormActionsProps {
   handleCopy: () => void;
   handleDuplicate: () => void;
   handleDelete: () => void;
+  isSubmitting?: boolean;
 }
 
 const SampleFormActions = ({
@@ -16,20 +17,23 @@ const SampleFormActions = ({
   handleAddSample,
   handleCopy,
   handleDuplicate,
-  handleDelete
+  handleDelete,
+  isSubmitting = false
 }: SampleFormActionsProps) => {
   return (
     <div className="flex flex-wrap gap-2">
       <Button 
         className="bg-[#0091CA] hover:bg-[#007AA8]"
         onClick={handleSave}
+        disabled={isSubmitting}
       >
         <Save className="w-4 h-4 mr-2" />
-        Sauvegarder
+        {isSubmitting ? 'Enregistrement...' : 'Sauvegarder'}
       </Button>
       <Button 
         variant="outline"
         onClick={handleAddSample}
+        disabled={isSubmitting}
       >
         <Plus className="w-4 h-4 mr-2" />
         Ajouter échantillon
@@ -37,6 +41,7 @@ const SampleFormActions = ({
       <Button 
         variant="outline"
         onClick={handleCopy}
+        disabled={isSubmitting}
       >
         <Copy className="w-4 h-4 mr-2" />
         Copier
@@ -44,6 +49,7 @@ const SampleFormActions = ({
       <Button 
         variant="outline"
         onClick={handleDuplicate}
+        disabled={isSubmitting}
       >
         <Printer className="w-4 h-4 mr-2" />
         Dupliquer le numéro
@@ -51,6 +57,7 @@ const SampleFormActions = ({
       <Button 
         variant="destructive"
         onClick={handleDelete}
+        disabled={isSubmitting}
       >
         <Trash2 className="w-4 h-4 mr-2" />
         Suppr.

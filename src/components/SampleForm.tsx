@@ -1,12 +1,13 @@
+
 import React, { useState } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import SampleFormHeader from './sample-form/SampleFormHeader';
 import SampleFormInputs from './sample-form/SampleFormInputs';
 import SampleFormActions from './sample-form/SampleFormActions';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Plus, Save, Copy, Printer, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Sample {
   id: number;
@@ -23,13 +24,15 @@ interface Sample {
 
 const SampleForm = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [site, setSite] = useState('');
   const [sampleDate, setSampleDate] = useState('');
   const [reference, setReference] = useState('');
   const [samples, setSamples] = useState<Sample[]>([]);
   const [selectedSamples, setSelectedSamples] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!site || !sampleDate) {
       toast({
         title: "Champs requis",
@@ -38,12 +41,65 @@ const SampleForm = () => {
       });
       return;
     }
+
+    setIsSubmitting(true);
     
-    toast({
-      title: "Sauvegardé",
-      description: "Les informations ont été sauvegardées avec succès.",
-      variant: "default"
-    });
+    try {
+      // Créez un ID de rapport unique
+      const reportId = uuidv4();
+      
+      // Enregistrez d'abord les informations du formulaire
+      const { error: formError } = await supabase
+        .from('sample_forms')
+        .insert({
+          report_id: reportId,
+          site: site,
+          sample_date: sampleDate,
+          reference: reference,
+          created_by: user?.id || null,
+          created_at: new Date().toISOString()
+        });
+        
+      if (formError) throw formError;
+      
+      // Ensuite, enregistrez tous les échantillons associés à ce formulaire
+      if (samples.length > 0) {
+        const samplesData = samples.map(sample => ({
+          report_id: reportId,
+          program: sample.program,
+          label: sample.label,
+          nature: sample.nature,
+          lab_comment: sample.labComment,
+          additional_details: sample.additionalDetails,
+          temperature: sample.temperature,
+          analysis_date: sample.analysisDate,
+          storage_temp: sample.storageTemp,
+          break_date: sample.breakDate
+        }));
+        
+        const { error: samplesError } = await supabase
+          .from('form_samples')
+          .insert(samplesData);
+          
+        if (samplesError) throw samplesError;
+      }
+      
+      toast({
+        title: "Sauvegardé",
+        description: "Les informations ont été sauvegardées avec succès.",
+        variant: "default"
+      });
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'enregistrement:', error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite lors de l'enregistrement des données.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddSample = () => {
@@ -77,6 +133,14 @@ const SampleForm = () => {
       return;
     }
     
+    const copiedSamples = samples
+      .filter(sample => selectedSamples.includes(sample.id))
+      .map(sample => ({
+        ...sample,
+        id: samples.length + Math.floor(Math.random() * 1000) + 1
+      }));
+    
+    setSamples([...samples, ...copiedSamples]);
     toast({
       title: "Copié",
       description: `${selectedSamples.length} échantillon(s) copié(s).`
@@ -156,6 +220,7 @@ const SampleForm = () => {
             handleCopy={handleCopy}
             handleDuplicate={handleDuplicate}
             handleDelete={handleDelete}
+            isSubmitting={isSubmitting}
           />
 
           <div className="overflow-x-auto">
