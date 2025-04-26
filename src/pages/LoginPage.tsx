@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { UserRole, useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Mail, Lock } from 'lucide-react';
+import { Check, Mail, Lock, Home } from 'lucide-react';
 
 const LoginPage = () => {
   const { login } = useAuth();
@@ -39,7 +39,7 @@ const LoginPage = () => {
         title: "Connexion réussie",
         description: `Vous êtes connecté en tant que ${role === 'coordinator' ? 'coordinateur' : 'technicien'}.`,
       });
-      navigate('/');
+      navigate('/quality-control');
     } catch (error) {
       toast({
         title: "Erreur de connexion",
@@ -108,23 +108,30 @@ const LoginPage = () => {
             </RadioGroup>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-[#0091CA] hover:bg-[#007AA8]"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="flex items-center">
-                <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                Connexion...
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <Check className="w-4 h-4 mr-2" />
-                Se connecter
-              </span>
-            )}
-          </Button>
+          <div className="flex flex-col space-y-4">
+            <Button 
+              type="submit" 
+              className="w-full bg-[#0091CA] hover:bg-[#007AA8]"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <span className="flex items-center">
+                  <span className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  Connexion...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <Check className="w-4 h-4 mr-2" />
+                  Se connecter
+                </span>
+              )}
+            </Button>
+            
+            <Link to="/" className="flex items-center justify-center text-[#0091CA] hover:underline">
+              <Home className="w-4 h-4 mr-2" />
+              Retour à l'accueil
+            </Link>
+          </div>
         </form>
       </div>
     </div>
