@@ -1,51 +1,7 @@
-
 import { useState, useEffect } from 'react';
-import { addDays, format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { UserRole } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-
-export interface Sample {
-  id: string;
-  number: string;
-  product: string;
-  readyTime: string;
-  fabrication: string;
-  dlc: string;
-  smell: string;
-  texture: string;
-  taste: string;
-  aspect: string;
-  ph: string;
-  enterobacteria: string;
-  yeastMold: string;
-  createdAt?: string;
-  modifiedAt?: string;
-  modifiedBy?: string;
-  status?: 'pending' | 'inProgress' | 'completed';
-}
-
-// Interface pour mapper les données de Supabase
-interface SupabaseSample {
-  id: string;
-  number: string;
-  product: string;
-  ready_time: string;
-  fabrication: string;
-  dlc: string;
-  smell: string;
-  texture: string;
-  taste: string;
-  aspect: string;
-  ph: string | null;
-  enterobacteria: string | null;
-  yeast_mold: string | null;
-  created_at: string;
-  modified_at: string;
-  modified_by: string | null;
-  status: string;
-  brand: string | null;
-}
+import { Sample, SupabaseSample } from '@/types/samples';
 
 interface UseSamplesProps {
   savedSamples?: Sample[];
@@ -56,7 +12,6 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
   const [samples, setSamples] = useState<Sample[]>([]);
   const { toast } = useToast();
 
-  // Load samples from Supabase on mount
   useEffect(() => {
     const loadSamples = async () => {
       try {
@@ -66,13 +21,10 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
           .eq('brand', brand)
           .order('created_at', { ascending: false });
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (data) {
-          // Transformer les données de Supabase en Sample[]
-          const mappedSamples: Sample[] = data.map((sample: SupabaseSample) => ({
+          const mappedSamples: Sample[] = (data as SupabaseSample[]).map(sample => ({
             id: sample.id,
             number: sample.number,
             product: sample.product,
@@ -89,7 +41,10 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
             createdAt: sample.created_at,
             modifiedAt: sample.modified_at,
             modifiedBy: sample.modified_by || undefined,
-            status: sample.status as 'pending' | 'inProgress' | 'completed'
+            status: sample.status as 'pending' | 'inProgress' | 'completed',
+            assignedTo: sample.assigned_to || undefined,
+            reportTitle: sample.report_title || undefined,
+            brand: sample.brand || undefined
           }));
           
           setSamples(mappedSamples);
@@ -196,7 +151,6 @@ export const useSamples = ({ savedSamples = [], brand = '' }: UseSamplesProps) =
 
       const oldValue = sample[field] as string;
       
-      // Mapper les noms de champs pour Supabase
       const fieldMap: Record<keyof Sample, string> = {
         readyTime: 'ready_time',
         yeastMold: 'yeast_mold',

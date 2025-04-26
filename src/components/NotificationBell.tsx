@@ -27,7 +27,6 @@ const NotificationBell = () => {
 
   const handleNotificationClick = (id: string) => {
     markAsRead(id);
-    // Navigate to sample page if clicked
     navigate('/sample-entry');
     setOpen(false);
   };
@@ -81,7 +80,7 @@ const NotificationBell = () => {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(notification.created_at), {
+                        {formatDistanceToNow(new Date(notification.createdAt), {
                           addSuffix: true,
                           locale: fr
                         })}
