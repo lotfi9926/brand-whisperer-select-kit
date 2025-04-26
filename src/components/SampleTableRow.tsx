@@ -28,7 +28,7 @@ const SampleTableRow: React.FC<SampleTableRowProps> = ({
 }) => {
   const isCoordinator = userRole === 'coordinator';
   const isTechnician = userRole === 'technician';
-  const alertStatus = useSampleAlertStatus(sample.createdAt);
+  const alertStatus = useSampleAlertStatus(sample.createdAt, sample.enterobacteria, sample.yeastMold);
   const rowClassName = alertStatus === 'urgent' ? 'bg-red-50' : 
                       alertStatus === 'warning' ? 'bg-yellow-50' : '';
 

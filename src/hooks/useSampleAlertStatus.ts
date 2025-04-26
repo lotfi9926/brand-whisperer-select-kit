@@ -1,7 +1,7 @@
 
 import { differenceInHours, differenceInDays, parseISO } from 'date-fns';
 
-export const useSampleAlertStatus = (createdAt?: string) => {
+export const useSampleAlertStatus = (createdAt?: string, enterobacteria?: string, yeastMold?: string) => {
   if (!createdAt) return null;
   
   try {
@@ -10,13 +10,13 @@ export const useSampleAlertStatus = (createdAt?: string) => {
     const hoursSince = differenceInHours(currentDate, sampleDate);
     const daysSince = differenceInDays(currentDate, sampleDate);
     
-    // Alert for enterobacteria
-    if (hoursSince >= 24 && !createdAt) {
+    // Alert for enterobacteria - if 24+ hours passed and no enterobacteria value
+    if (hoursSince >= 24 && !enterobacteria) {
       return 'warning'; // yellow alert
     }
     
-    // Alert for yeast/mold
-    if (daysSince >= 5 && !createdAt) {
+    // Alert for yeast/mold - if 5+ days passed and no yeast/mold value
+    if (daysSince >= 5 && !yeastMold) {
       return 'urgent'; // red alert
     }
     

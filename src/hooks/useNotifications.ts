@@ -50,13 +50,13 @@ export const useNotifications = () => {
 
   // Save notifications to localStorage when they change
   useEffect(() => {
-    localStorage.setItem('qc_notifications', JSON.stringify(notifications));
+    if (notifications.length > 0) {
+      localStorage.setItem('qc_notifications', JSON.stringify(notifications));
+    }
   }, [notifications]);
 
   // Check for pending samples that need notifications
   useEffect(() => {
-    if (user?.role !== 'technician') return;
-    
     const checkSamples = () => {
       try {
         const storedAnalysis = localStorage.getItem('savedAnalysis');
@@ -66,7 +66,9 @@ export const useNotifications = () => {
         const currentDate = new Date();
         
         samples.forEach((sample: Sample) => {
-          const sampleDate = parseISO(sample.createdAt || new Date().toISOString());
+          if (!sample.createdAt) return;
+          
+          const sampleDate = parseISO(sample.createdAt);
           const hoursSince = differenceInHours(currentDate, sampleDate);
           const daysSince = differenceInDays(currentDate, sampleDate);
           

@@ -22,7 +22,7 @@ const SampleEntryPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { reportTitle, samples: savedSamples, brand } = location.state || { reportTitle: '', samples: [], brand: '' };
+  const { reportTitle = '', samples: savedSamples = [], brand = '' } = location.state || {};
   
   const [waterPeptone, setWaterPeptone] = useState<string>('');
   const [petriDishes, setPetriDishes] = useState<string>('');
@@ -30,19 +30,23 @@ const SampleEntryPage = () => {
   const [YGCGel, setYGCGel] = useState<string>('');
   const [isLocked, setIsLocked] = useState<boolean>(false);
 
-  // Load batch numbers from localStorage if available
+  // Load batch numbers from localStorage once on component mount
   useEffect(() => {
-    const storedAnalysis = localStorage.getItem('savedAnalysis');
-    if (storedAnalysis) {
-      const { batchNumbers } = JSON.parse(storedAnalysis);
-      if (batchNumbers) {
-        setWaterPeptone(batchNumbers.waterPeptone || '');
-        setPetriDishes(batchNumbers.petriDishes || '');
-        setVRBGGel(batchNumbers.VRBGGel || '');
-        setYGCGel(batchNumbers.YGCGel || '');
+    const loadBatchNumbers = () => {
+      const storedAnalysis = localStorage.getItem('savedAnalysis');
+      if (storedAnalysis) {
+        const { batchNumbers } = JSON.parse(storedAnalysis);
+        if (batchNumbers) {
+          setWaterPeptone(batchNumbers.waterPeptone || '');
+          setPetriDishes(batchNumbers.petriDishes || '');
+          setVRBGGel(batchNumbers.VRBGGel || '');
+          setYGCGel(batchNumbers.YGCGel || '');
+        }
       }
-    }
-  }, []);
+    };
+    
+    loadBatchNumbers();
+  }, []); // Only run once on mount
 
   const { samples, addSample, updateSample, toggleConformity, validateSamples, addChangeHistory } = useSamples({
     savedSamples,
@@ -62,6 +66,7 @@ const SampleEntryPage = () => {
       timestamp: currentDate
     });
 
+    // Save to localStorage
     localStorage.setItem('savedAnalysis', JSON.stringify({
       samples,
       reportTitle,
@@ -120,14 +125,18 @@ const SampleEntryPage = () => {
     }
   };
 
-  // Check if fields are already locked in localStorage
+  // Check if fields are already locked in localStorage - only run once
   useEffect(() => {
-    const storedAnalysis = localStorage.getItem('savedAnalysis');
-    if (storedAnalysis) {
-      const { lockedByCoordinator } = JSON.parse(storedAnalysis);
-      if (lockedByCoordinator) setIsLocked(true);
-    }
-  }, []);
+    const checkLockStatus = () => {
+      const storedAnalysis = localStorage.getItem('savedAnalysis');
+      if (storedAnalysis) {
+        const { lockedByCoordinator } = JSON.parse(storedAnalysis);
+        if (lockedByCoordinator) setIsLocked(true);
+      }
+    };
+    
+    checkLockStatus();
+  }, []); // Only run once on mount
 
   const isGrandFrais = brand === '1';
   const isCoordinator = user?.role === 'coordinator';
