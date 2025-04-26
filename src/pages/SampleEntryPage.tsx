@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
@@ -10,6 +9,7 @@ import SamplesTable from '@/components/SamplesTable';
 import SamplePageHeader from '@/components/SamplePageHeader';
 import SampleActionButtons from '@/components/SampleActionButtons';
 import { useSamples } from '@/hooks/useSamples';
+import DownloadFormButton from '@/components/sample-form/DownloadFormButton';
 
 const GF_PRODUCTS = [
   'Crème dessert vanille',
@@ -30,7 +30,6 @@ const SampleEntryPage = () => {
   const [YGCGel, setYGCGel] = useState<string>('');
   const [isLocked, setIsLocked] = useState<boolean>(false);
 
-  // Load batch numbers from localStorage once on component mount
   useEffect(() => {
     const loadBatchNumbers = () => {
       const storedAnalysis = localStorage.getItem('savedAnalysis');
@@ -58,7 +57,6 @@ const SampleEntryPage = () => {
 
     const currentDate = new Date().toISOString();
     
-    // Create change history entry
     addChangeHistory({
       action: 'save',
       user: user?.name || 'Unknown',
@@ -66,7 +64,6 @@ const SampleEntryPage = () => {
       timestamp: currentDate
     });
 
-    // Save to localStorage
     localStorage.setItem('savedAnalysis', JSON.stringify({
       samples,
       reportTitle,
@@ -116,7 +113,6 @@ const SampleEntryPage = () => {
       description: "Les champs coordinateur ont été verrouillés avec succès.",
     });
 
-    // Update localStorage
     const storedAnalysis = localStorage.getItem('savedAnalysis');
     if (storedAnalysis) {
       const analysisData = JSON.parse(storedAnalysis);
@@ -125,7 +121,6 @@ const SampleEntryPage = () => {
     }
   };
 
-  // Check if fields are already locked in localStorage - only run once
   useEffect(() => {
     const checkLockStatus = () => {
       const storedAnalysis = localStorage.getItem('savedAnalysis');
@@ -164,6 +159,16 @@ const SampleEntryPage = () => {
                 onSave={handleSave}
                 onAdd={addSample}
                 showAddButton={isCoordinator && !isLocked}
+              />
+              <DownloadFormButton
+                samples={samples}
+                reportTitle={reportTitle}
+                batchNumbers={{
+                  waterPeptone,
+                  petriDishes,
+                  VRBGGel,
+                  YGCGel
+                }}
               />
             </div>
           </div>
