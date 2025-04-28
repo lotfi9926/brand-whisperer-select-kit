@@ -1,27 +1,14 @@
-
 import React, { useState } from 'react';
-import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 import SampleFormHeader from './sample-form/SampleFormHeader';
 import SampleFormInputs from './sample-form/SampleFormInputs';
 import SampleFormActions from './sample-form/SampleFormActions';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { v4 as uuidv4 } from 'uuid';
-import { useNavigate } from 'react-router-dom';
-
-interface Sample {
-  id: number;
-  program: string;
-  label: string;
-  nature: string;
-  labComment: string;
-  additionalDetails: string;
-  temperature: string;
-  analysisDate: string;
-  storageTemp: string;
-  breakDate: string;
-}
+import SamplesFormTable from './sample-form/SamplesFormTable';
+import { Sample } from '@/types/samples';
 
 const SampleForm = () => {
   const { toast } = useToast();
@@ -89,7 +76,6 @@ const SampleForm = () => {
         description: "Les informations ont été sauvegardées avec succès."
       });
 
-      // Navigate to sample entry page after successful save
       navigate('/sample-entry', { 
         state: { 
           reportId,
@@ -233,72 +219,12 @@ const SampleForm = () => {
           />
 
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <tr className="bg-muted/50">
-                  <th className="w-12">
-                    <input 
-                      type="checkbox" 
-                      className="form-checkbox"
-                      checked={selectedSamples.length === samples.length && samples.length > 0}
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                  <th>Programme*</th>
-                  <th>Numéro d'étiquette*</th>
-                  <th>Nature de l'échantillon*</th>
-                  <th>Commentaire laboratoire</th>
-                  <th>Précisions complémentaires</th>
-                  <th>T(°C) produit</th>
-                  <th>Date prévue de mise en analyse</th>
-                  <th>T(°C) de conservation échantillon avant analyse</th>
-                  <th>Date de rupture</th>
-                  <th>Actions</th>
-                </tr>
-              </TableHeader>
-              <TableBody>
-                {samples.length > 0 ? (
-                  samples.map(sample => (
-                    <tr key={sample.id}>
-                      <td>
-                        <input 
-                          type="checkbox" 
-                          className="form-checkbox" 
-                          checked={selectedSamples.includes(sample.id)}
-                          onChange={() => toggleSelectSample(sample.id)}
-                        />
-                      </td>
-                      <td>{sample.program || '-'}</td>
-                      <td>{sample.label || '-'}</td>
-                      <td>{sample.nature || '-'}</td>
-                      <td>{sample.labComment || '-'}</td>
-                      <td>{sample.additionalDetails || '-'}</td>
-                      <td>{sample.temperature || '-'}</td>
-                      <td>{sample.analysisDate || '-'}</td>
-                      <td>{sample.storageTemp || '-'}</td>
-                      <td>{sample.breakDate || '-'}</td>
-                      <td>-</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td>
-                      <input type="checkbox" className="form-checkbox" disabled />
-                    </td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                  </tr>
-                )}
-              </TableBody>
-            </Table>
+            <SamplesFormTable
+              samples={samples}
+              selectedSamples={selectedSamples}
+              toggleSelectSample={toggleSelectSample}
+              toggleSelectAll={toggleSelectAll}
+            />
           </div>
         </div>
       </main>
