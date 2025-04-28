@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableHead } from '@/components/ui/table';
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +8,7 @@ import SampleFormActions from './sample-form/SampleFormActions';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 
 interface Sample {
   id: number;
@@ -24,6 +26,7 @@ interface Sample {
 const SampleForm = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [site, setSite] = useState('');
   const [sampleDate, setSampleDate] = useState('');
   const [reference, setReference] = useState('');
@@ -84,6 +87,16 @@ const SampleForm = () => {
       toast({
         title: "Sauvegardé",
         description: "Les informations ont été sauvegardées avec succès."
+      });
+
+      // Navigate to sample entry page after successful save
+      navigate('/sample-entry', { 
+        state: { 
+          reportId,
+          site,
+          sampleDate,
+          reference
+        } 
       });
       
     } catch (error) {
@@ -221,7 +234,7 @@ const SampleForm = () => {
 
           <div className="overflow-x-auto">
             <Table>
-              <thead>
+              <TableHeader>
                 <tr className="bg-muted/50">
                   <th className="w-12">
                     <input 
@@ -242,8 +255,8 @@ const SampleForm = () => {
                   <th>Date de rupture</th>
                   <th>Actions</th>
                 </tr>
-              </thead>
-              <tbody>
+              </TableHeader>
+              <TableBody>
                 {samples.length > 0 ? (
                   samples.map(sample => (
                     <tr key={sample.id}>
@@ -284,7 +297,7 @@ const SampleForm = () => {
                     <td>-</td>
                   </tr>
                 )}
-              </tbody>
+              </TableBody>
             </Table>
           </div>
         </div>
